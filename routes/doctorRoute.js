@@ -11,6 +11,10 @@ doctorRoute.post('/login',doctorController.doctorLogin)
 doctorRoute.post('/forgot-password',doctorController.forgotPassword)
 doctorRoute.post('/reset-password/:id/:token',doctorController.resetPassword)
 doctorRoute.post('/details',doctorController.doctorDetails)
+doctorRoute.post('/add-slot',doctorController.addSlot)
+doctorRoute.delete('/delete-slot',doctorController.deleteSlot)
+
+
 
 
 

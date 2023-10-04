@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
   token: {
     type: String,
   },
+  profilePic:{
+    type:String,
+  },
+  
   documents: {
     type: Array,
   },
@@ -48,6 +52,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  image: {
+    type: String,
+  }
+
 
 
 },{timestamps:true});

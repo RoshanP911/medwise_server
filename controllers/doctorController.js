@@ -156,39 +156,45 @@ const sendMail = async (email, otp) => {
 
 
   //DOCTOR LOGIN
+
+
 const doctorLogin = async (req, res) => {
   try {
-    const { email, password } = req.body
-    if (email && password) {
-      const isUserr = await Doctor.findOne({ email: email });
-      if (isUserr) {
-        const passwordsMatch= bcryptjs.compare(password, isUserr.password)
-        const verified=isUserr.is_verified  
-      
+    const { email, password } = req.body;
+    console.log(req.body);
 
+    const doctor = await Doctor.findOne({ email });
 
-        if (passwordsMatch && verified) { 
-           const approved=isUserr.is_approved  
-          if(approved){
-                 const payload = { userId: isUserr._id };
-          const token = jwt.sign(payload, "secreTkey", { expiresIn: "2h" });
-          return res.status(200).json({ message: "Login Successful", token: token,success: true, isUserr});
-          }
-          else{
-            return res.status(200).json({message:"Account not approved by admin", success: false,isUserr });
-          }
-     
-        } else {
-          return res.status(400).json({message:"Invalid Credentials", success: false });
-        }
-      } else {
-        return res.status(400).json({message:"Doctor is not registered", success: false});
-      }
-    } else {
-      return res.status(400).json({ message: "Fill all fields", success: false });
+    if (!doctor) {
+      return res.status(400).json({ message: "Doctor is not registered", success: false });
     }
+
+    const passwordsMatch = await bcryptjs.compare(password, doctor.password);
+
+    if (!passwordsMatch) {
+      return res.status(400).json({ message: "Invalid Credentials", success: false });
+    }
+
+    if (!doctor.is_verified) {
+      return res.status(400).json({ message: "Email not verified", success: false });
+    }
+
+    if (!doctor.is_approved) {
+      return res.status(200).json({ message: "Account not approved by admin", success:true, doctor });
+    }
+
+    if (doctor.is_blocked) {
+      return res.status(400).json({ message: "Account blocked by admin", success: false });
+    }
+
+    const payload = { userId: doctor._id };
+     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
+    //         const token = jwt.sign(payload, "secreTkey", { expiresIn: "2h" });
+
+    return res.status(200).json({ message: "Login Successful", token, success: true, doctor });
   } catch (error) {
-    return res.status(500).send({ message: "something went wrong ", success: false, error });
+    console.error("An error occurred:", error);
+    return res.status(500).json({ message: "Something went wrong", success: false });
   }
 };
 
@@ -249,9 +255,7 @@ const forgotPassword=async(req,res)=>{
 //RESET PASSWORD
 const resetPassword = async (req, res) => {
   try {
-    console.log(req.body, 'req body');
-    console.log(req.params, 'req params');
-
+   
     const { id, token } = req.params;
     const newPassword = req.body.password; 
 
@@ -275,25 +279,76 @@ const resetPassword = async (req, res) => {
 
 
 
-
+//DOCTOR DETAILS
 const doctorDetails = async (req, res) => {
   try {
-    console.log(req.body, 'req body doctorDetails');
     const {doccData,registrationNumber,registrationCouncil,registrationYear, qualification,videoCallFees,specialisation,city,gender,fileUrl}=req.body
 
     await Doctor.findByIdAndUpdate({_id:doccData}, { registrationNumber:registrationNumber, registrationCouncil:registrationCouncil,registrationYear:registrationYear,qualification:qualification,videoCallFees:videoCallFees,specialisation:specialisation,city:city,gender:gender,file:fileUrl})
     return res.status(200).json({message:"Doctor registration completed ", success: true });
 
 
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong', success: false, error });
+  }
+};
 
+//ADD SLOT
+const addSlot = async(req, res) => {
+    const { doctorData, selectedDate,_id } = req.body
 
+    try {
+           const doctor = await Doctor.findById(doctorData._id);
+            if (!doctor) {
+              return res.status(200).json({message:"Doctor not found ", success: true });
+            }
+            if (!doctor.is_verified)
+              return res.status(200).json({message:"Doctor not verified ", success: true });
 
+              if (doctor.availableSlots.includes(selectedDate)) {
+                return res.status(200).json({message:"Slot already exists ", success: false });
+              }
 
+              doctor.availableSlots.push(selectedDate);
+              const newDoctor = await doctor.save();
+              return res.status(200).json({message:"Slot added successfully ", success: true ,newDoctor});
 
   } catch (error) {
     res.status(500).json({ message: 'Something went wrong', success: false, error });
   }
 };
+
+
+
+//DELETE SLOT
+const deleteSlot = async (req, res) => {
+  const { doctorData, slotToDelete } = req.body;
+
+  try {
+    const doctor = await Doctor.findById(doctorData._id);
+
+    if (!doctor) {
+      return res.status(200).json({message:"Doctor not found ", success: true });
+    }
+ 
+
+    doctor.availableSlots=doctor.availableSlots.filter( (slot) => slot !== slotToDelete)
+    const updatedDoctor = await doctor.save();
+
+
+
+    return res.status(200).json({message:"Slot removed successfully ", success: true ,updatedDoctor});
+
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong', success: false, error });
+
+  }
+}
+
+
+
+
+
 
   
 module.exports = {
@@ -304,6 +359,10 @@ module.exports = {
     doctorLogin,
     forgotPassword,
     resetPassword,
-    doctorDetails
+    doctorDetails,
+    addSlot,
+    deleteSlot
   };
   
+
+

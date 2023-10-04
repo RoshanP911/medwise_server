@@ -1,4 +1,6 @@
 const User = require("../models/userModel.js");
+const Doctor = require("../models/doctorModel.js");
+
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
@@ -163,7 +165,7 @@ const userLogin = async (req, res) => {
 
         if (passwordsMatch && verified) {
           const payload = { userId: isUser._id }; 
-          const token = jwt.sign(payload, "secreTkey", { expiresIn: "2h" });
+          const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
     
           return res.status(200).json({ message: "Login Successful", token: token,success: true, isUser});
         } else {
@@ -275,6 +277,8 @@ const editProfile = async (req, res) => {
           email: userData.email,
           age: userData.age,
           address: userData.address,
+          image: userData.imageUrl,
+
         },
       },
       { new: true } 
@@ -315,6 +319,53 @@ console.log(blockUserData,'blockUserDatablockUserData');
 
 
 
+
+//FIND DOCTORS
+const findDoctors= async (req, res) => {
+  try {
+    const allDoctors = await Doctor.find({ is_approved:true });
+
+    console.log(allDoctors,'allDoctors');
+    return res
+    .status(200)
+    .json({ message: 'allDoctors', success: true, allDoctors:allDoctors });
+
+
+  } catch (error) {
+    res.status(500).json({ message: "Error while fetching doctor", success: false, error });
+  }
+}
+
+
+//
+const singleDoctorDetails=async (req, res) => {
+  try {
+    id = req.params.id;
+      const doctorDetail = await Doctor.findById({ _id: id });
+      console.log(doctorDetail,'doctorDetail');
+
+      if (doctorDetail) {
+        res.status(200).send({
+          success: true,
+          message: "details fetched",
+          data: doctorDetail,
+          
+        });
+      } else {
+        res.status(404).send({
+          success: false,
+          message: "error while fetching doctor details",
+        });
+      }
+  } catch (error) {
+    res.status(500).json({ message: "Error while fetching doctor", success: false, error });
+  }
+}
+
+
+
+
+
 module.exports = {
   userRegistration,
   sendMail,
@@ -324,5 +375,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   editProfile,
-  userBlock
+  userBlock,
+  findDoctors,
+  singleDoctorDetails
 };

@@ -88,13 +88,15 @@ const adminLogin = async (req, res) => {
       const { departmentName,imageUrl } = req.body;
       console.log(req.body,'req.body createDepartment ');
 
-      const exist = await Department.find({ name: departmentName });
+      const nameLo =departmentName.toLowerCase()
+
+      const exist = await Department.find({ name: nameLo });
       if(exist!= ""){
         return res.status(200).json({ message: "Department already exists",  success: true});
       }
       else{
       const dep = new Department({
-        name: departmentName,
+        name: nameLo,
         image:imageUrl
       });
 
@@ -142,11 +144,78 @@ const adminLogin = async (req, res) => {
   }
 
 
+
+    //DOCTOR APPROVE
+    const doctorApprove=async(req,res)=>{
+
+      const {doctorId}=req.body
+  
+      const approveDoctorData=await Doctor.findById(doctorId)
+      const approve_status = approveDoctorData.is_approved
+  
+      try {
+        const approveDoctor=await Doctor.findByIdAndUpdate(
+          doctorId,
+          { $set: { is_approved: !approve_status } },
+          { new: true }
+        );
+      
+  
+            if(approveDoctor.is_approved===true){
+              return res.status(200).json({message:'Doctor approved successfully',success: true ,data:approveDoctor})
+              }
+              else{
+                return res.status(200).json({message:'Doctor not approved',success: true ,data:approveDoctor})
+              }
+        
+  
+      } catch (error) {
+        console.error(error);
+  
+        return res.status(500).json({ message: "Error while approving doctor", success: false,error: error.message});
+      }
+    }
+
+
+
+
+    const docDocument=async(req,res)=>{
+      const {doctorId}=req.body
+      const DoctorData=await Doctor.findById(doctorId)
+             try {
+      return res.status(200).json({message:'Doctor got successfully',success: true ,data:DoctorData.file})
+  
+      } catch (error) {
+        console.error(error);
+  
+        return res.status(500).json({ message: "Error while getting doctor", success: false,error: error.message});
+      }
+    }
+  
+  
+  
+    const docDetails=async(req,res)=>{
+      const {approveUserId}=req.body
+      const DoctorData=await Doctor.findById(approveUserId)
+       console.log(DoctorData,'DoctorDatafffffffffff');
+      try {
+      return res.status(200).json({data:DoctorData})
+      } catch (error) {
+        console.error(error);
+  
+        return res.status(500).json({ message: "Error while getting doctor", success: false,error: error.message});
+      }
+    }
+
+
 module.exports={
 adminLogin,
 userList,
 createDepartment,
 departmentList,
 doctorList,
-doctorBlockUnblock
+doctorBlockUnblock,
+doctorApprove,
+docDocument,
+docDetails
 }

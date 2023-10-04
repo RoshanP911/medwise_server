@@ -89,7 +89,17 @@ const doctorSchema = new mongoose.Schema(
       },
       registrationYear:{
         type: String,
-      }
+      },
+      availableSlots: [
+        {
+          type: String,
+        },
+      ],
+      bookedSlots: [
+        {
+          type: String,
+        },
+      ],
 
       
     },
