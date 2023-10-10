@@ -16,6 +16,10 @@ userRoute.post('/edit-profile',verifyToken.verifyToken,userController.editProfil
 userRoute.get('/find-doctors',userController.findDoctors)
 userRoute.post('/blockUser', userController.userBlock)
 userRoute.get('/singleDoctorDetails/:id', userController.singleDoctorDetails)
+userRoute.post('/book-appointment', userController.bookSlot)
+userRoute.post('/create-checkout-session', userController.stripeBooking)
+
+
 
 
 

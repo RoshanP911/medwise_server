@@ -1,9 +1,12 @@
 const User = require("../models/userModel.js");
 const Doctor = require("../models/doctorModel.js");
+const Appointment = require("../models/appointmentModel.js");
+
 
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
+//const stripe = stripePackage(`${process.env.STRIPE_KEY}`);
 require("dotenv").config();
 
 //NEW USER SIGNUP
@@ -304,17 +307,6 @@ const editProfile = async (req, res) => {
 
   const blockUserData=await User.findById(userId)
 console.log(blockUserData,'blockUserDatablockUserData');
-  // const block_status = blockUserData.is_blocked
-  // try {
-  //   await Doctor.findByIdAndUpdate(
-  //     blockid,
-  //     { $set: { is_blocked: !block_status } },
-  //     { new: true }
-  //   );
-
-  // } catch (error) {
-  //   return res.status(500).json({ message: "error while blocking doctor", success: false});
-  // }
 }
 
 
@@ -324,8 +316,6 @@ console.log(blockUserData,'blockUserDatablockUserData');
 const findDoctors= async (req, res) => {
   try {
     const allDoctors = await Doctor.find({ is_approved:true });
-
-    console.log(allDoctors,'allDoctors');
     return res
     .status(200)
     .json({ message: 'allDoctors', success: true, allDoctors:allDoctors });
@@ -364,6 +354,92 @@ const singleDoctorDetails=async (req, res) => {
 
 
 
+const bookSlot = async (req, res) => {
+  try {
+
+    const { doctor, user, value} = req.body;
+    const appointmentData=req.body
+
+    const appointment = new Appointment({
+      userId:user._id,
+      doctorId:doctor._id,
+      slot:value
+    });
+    appointment.save();
+
+
+    res.status(200).send({
+      success: true,
+      appointmentData,
+      message: "Appointment created"
+      
+    });
+  } catch (error) {
+    res.json("error");
+  }
+};
+
+
+
+
+const stripeBooking = async (req, res) => {
+  try {
+const doctorData=req.body.response.doctor
+
+
+
+// This is your test secret API key.
+const stripe = require('stripe')('sk_test_51NyySbSIIYrigBg1ibHYBEz6XBMk9xh6qb4nz7vIqEsBr92K5a2ADUGRp1yenIZ2C9HnAF2sbRckGoDygVH33mKC00lAfwi36J');
+const express = require('express');
+const app = express();
+app.use(express.static('public'));
+
+
+  const session = await stripe.checkout.sessions.create({
+
+    line_items: [
+            {
+              price_data: {
+                currency: "inr",
+                product_data: {
+                  name: `Dr.${doctorData.name}`,
+                },
+                unit_amount: `${doctorData?.videoCallFees * 100}`,
+              },
+              quantity: 1,
+            },
+          ],
+
+    mode: 'payment',
+    success_url: `${process.env.DOMAIN}/success`,
+    cancel_url: `${process.env.DOMAIN}/cancel`,
+  });
+
+  res.send({ url: session.url });
+
+
+
+  } catch (error) {
+    res.json("error");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 module.exports = {
@@ -377,5 +453,7 @@ module.exports = {
   editProfile,
   userBlock,
   findDoctors,
-  singleDoctorDetails
+  singleDoctorDetails,
+  bookSlot,
+  stripeBooking
 };
