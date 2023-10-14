@@ -197,7 +197,6 @@ const adminLogin = async (req, res) => {
     const docDetails=async(req,res)=>{
       const {approveUserId}=req.body
       const DoctorData=await Doctor.findById(approveUserId)
-       console.log(DoctorData,'DoctorDatafffffffffff');
       try {
       return res.status(200).json({data:DoctorData})
       } catch (error) {

@@ -1,27 +1,17 @@
-const express =require ("express")
-const adminRoute=express.Router()
+const express = require("express");
+const adminRoute = express.Router();
 
-const adminController=require("../controllers/adminController") 
+const adminController = require("../controllers/adminController");
+const { validateAdminToken } = require("../middlewares/jwt");
 
-
-
-adminRoute.post('/login', adminController.adminLogin)
-adminRoute.get('/users', adminController.userList)
-adminRoute.get('/departments', adminController.departmentList)
-adminRoute.post('/add_department', adminController.createDepartment)
-adminRoute.get('/doctors', adminController.doctorList)
-adminRoute.post('/blockDoctor', adminController.doctorBlockUnblock)
-adminRoute.post('/approveDoctor', adminController.doctorApprove)
-adminRoute.post('/doc-document', adminController.docDocument)
-adminRoute.post('/doc-details', adminController.docDetails)
-
-
-
-
-
-
-
-
-
+adminRoute.post("/login", adminController.adminLogin);
+adminRoute.get("/users", validateAdminToken, adminController.userList); //d
+adminRoute.get("/departments" ,validateAdminToken,adminController.departmentList); //D
+adminRoute.post("/add_department",validateAdminToken, adminController.createDepartment); //D
+adminRoute.get("/doctors",validateAdminToken, adminController.doctorList); //d
+adminRoute.post("/blockDoctor",validateAdminToken, adminController.doctorBlockUnblock);//d
+adminRoute.post("/approveDoctor", validateAdminToken,adminController.doctorApprove);//d
+adminRoute.post("/doc-document",validateAdminToken, adminController.docDocument);//d
+adminRoute.post("/doc-details", validateAdminToken, adminController.docDetails);
 
 module.exports = adminRoute;

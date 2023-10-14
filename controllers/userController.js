@@ -1,18 +1,12 @@
 const User = require("../models/userModel.js");
 const Doctor = require("../models/doctorModel.js");
 const Appointment = require("../models/appointmentModel.js");
-
-
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
-const jwt = require("jsonwebtoken");
-//const stripe = stripePackage(`${process.env.STRIPE_KEY}`);
+const jwt = require("jsonwebtoken");//const stripe = stripePackage(`${process.env.STRIPE_KEY}`);
 require("dotenv").config();
 
 //NEW USER SIGNUP
-
-
-
 const userRegistration = async (req, res) => {
   const { name, email, password, mobile } = req.body;
   try {
@@ -239,9 +233,6 @@ try {
 //RESET PASSWORD
 const resetPassword = async (req, res) => {
   try {
-    console.log(req.body, 'req body');
-    console.log(req.params, 'req params');
-
     const { id, token } = req.params;
     const newPassword = req.body.password; 
 
@@ -267,7 +258,6 @@ const resetPassword = async (req, res) => {
 //EDIT PROFILE
 const editProfile = async (req, res) => {
   try {
-    console.log(req.body, 'reqbodyy edit profilew');
     const userData = req.body;
 
     const updatedUser = await User.findOneAndUpdate(
@@ -327,12 +317,11 @@ const findDoctors= async (req, res) => {
 }
 
 
-//
+
 const singleDoctorDetails=async (req, res) => {
   try {
     id = req.params.id;
       const doctorDetail = await Doctor.findById({ _id: id });
-      console.log(doctorDetail,'doctorDetail');
 
       if (doctorDetail) {
         res.status(200).send({
@@ -353,47 +342,12 @@ const singleDoctorDetails=async (req, res) => {
 }
 
 
-
-const bookSlot = async (req, res) => {
-  try {
-
-    const { doctor, user, value} = req.body;
-    const appointmentData=req.body
-
-    const appointment = new Appointment({
-      userId:user._id,
-      doctorId:doctor._id,
-      slot:value
-    });
-    appointment.save();
-
-
-    res.status(200).send({
-      success: true,
-      appointmentData,
-      message: "Appointment created"
-      
-    });
-  } catch (error) {
-    res.json("error");
-  }
-};
-
-
-
-
+//STRIPE BOOKING NEW
 const stripeBooking = async (req, res) => {
   try {
-const doctorData=req.body.response.doctor
+const {doctor,user,value}=req.body.response
 
-
-
-// This is your test secret API key.
-const stripe = require('stripe')('sk_test_51NyySbSIIYrigBg1ibHYBEz6XBMk9xh6qb4nz7vIqEsBr92K5a2ADUGRp1yenIZ2C9HnAF2sbRckGoDygVH33mKC00lAfwi36J');
-const express = require('express');
-const app = express();
-app.use(express.static('public'));
-
+const stripe = require('stripe')(`${process.env.STRIPE_KEY}`);
 
   const session = await stripe.checkout.sessions.create({
 
@@ -402,9 +356,9 @@ app.use(express.static('public'));
               price_data: {
                 currency: "inr",
                 product_data: {
-                  name: `Dr.${doctorData.name}`,
+                  name: `Dr.${doctor.name}`,
                 },
-                unit_amount: `${doctorData?.videoCallFees * 100}`,
+                unit_amount: `${doctor?.videoCallFees * 100}`,
               },
               quantity: 1,
             },
@@ -415,24 +369,27 @@ app.use(express.static('public'));
     cancel_url: `${process.env.DOMAIN}/cancel`,
   });
 
+
+
+  if(session){
+    const appointment = new Appointment({
+      userId:user._id,
+      doctorId:doctor._id,
+      slot:value,
+      amount_paid:doctor.videoCallFees
+    });
+    appointment.save();
+
+  }
+  else{
+    res.json({ message: "No session" });
+  }
   res.send({ url: session.url });
-
-
 
   } catch (error) {
     res.json("error");
   }
 };
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -454,6 +411,5 @@ module.exports = {
   userBlock,
   findDoctors,
   singleDoctorDetails,
-  bookSlot,
-  stripeBooking
+  stripeBooking,
 };

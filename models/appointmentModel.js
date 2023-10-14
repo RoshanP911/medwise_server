@@ -27,6 +27,7 @@ const AppointmentSchema = new mongoose.Schema({
       },
       payment_mode:{
         type:[String],
+        default: "online"
       },
       amount_paid:{
         type:Number,
@@ -36,7 +37,7 @@ const AppointmentSchema = new mongoose.Schema({
       },
       appointment_mode:{
         type:String,
-        default:'offline'
+        default:'online'
       },
       findings:{
         type:String
