@@ -162,7 +162,7 @@ const userLogin = async (req, res) => {
 
         if (passwordsMatch && verified) {
           const payload = { userId: isUser._id }; 
-          const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
+          const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
     
           return res.status(200).json({ message: "Login Successful", token: token,success: true, isUser});
         } else {
@@ -184,7 +184,6 @@ const forgotPassword=async(req,res)=>{
 try {
   const {email}=req.body
   const isUser=await User.findOne({email:email})
-
   if(isUser){
 
     const payload = { userId: isUser._id }; 
@@ -288,7 +287,6 @@ const editProfile = async (req, res) => {
 
 
 
-
  //USER BLOCK/UNBLOCK
  const userBlock=async(req,res)=>{
 
@@ -298,9 +296,6 @@ const editProfile = async (req, res) => {
   const blockUserData=await User.findById(userId)
 console.log(blockUserData,'blockUserDatablockUserData');
 }
-
-
-
 
 //FIND DOCTORS
 const findDoctors= async (req, res) => {
@@ -315,7 +310,6 @@ const findDoctors= async (req, res) => {
     res.status(500).json({ message: "Error while fetching doctor", success: false, error });
   }
 }
-
 
 
 const singleDoctorDetails=async (req, res) => {
@@ -346,9 +340,7 @@ const singleDoctorDetails=async (req, res) => {
 const stripeBooking = async (req, res) => {
   try {
 const {doctor,user,value}=req.body.response
-
 const stripe = require('stripe')(`${process.env.STRIPE_KEY}`);
-
   const session = await stripe.checkout.sessions.create({
 
     line_items: [
@@ -395,6 +387,36 @@ const stripe = require('stripe')(`${process.env.STRIPE_KEY}`);
 
 
 
+const getAppointment = async (req, res) => {
+  try {
+    const {userId}=req.body
+    const appointments=await Appointment.find({userId:userId}).populate("doctorId").populate("userId")
+
+    return res
+    .status(200)
+    .json({  success: true, appointments:appointments });
+
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const cancelAppointment = async (req, res) => {
+try {
+const {apptId}=req.body
+await Appointment.findByIdAndUpdate({_id:apptId},{$set:{isCancelled:true}})
+  return res
+  .status(200)
+  .json({       success: true,
+   message:'Appointment cancelled' });
+
+
+} catch (error) {
+  res.status(500).json({ error: "An error occurred" });
+
+}
+}
 
 
 
@@ -412,4 +434,6 @@ module.exports = {
   findDoctors,
   singleDoctorDetails,
   stripeBooking,
+  getAppointment,
+  cancelAppointment
 };

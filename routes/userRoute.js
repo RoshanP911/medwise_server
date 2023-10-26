@@ -16,8 +16,13 @@ userRoute.post('/reset-password/:id/:token',userController.resetPassword)
 userRoute.post('/edit-profile',verifyToken,userController.editProfile)
 userRoute.get('/find-doctors',userController.findDoctors) //d
 userRoute.post('/blockUser', userController.userBlock)
-userRoute.get('/singleDoctorDetails/:id',verifyToken, userController.singleDoctorDetails)
-userRoute.post('/create-checkout-session',verifyToken, userController.stripeBooking)
+userRoute.get('/singleDoctorDetails/:id',verifyToken, userController.singleDoctorDetails)//d
+userRoute.post('/create-checkout-session',verifyToken, userController.stripeBooking)//d
+userRoute.post('/appointments',verifyToken, userController.getAppointment)//d
+userRoute.post('/cancel-appointment',verifyToken, userController.cancelAppointment)//d
+
+
+
 
 
 

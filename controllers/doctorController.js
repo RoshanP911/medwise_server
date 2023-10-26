@@ -1,4 +1,9 @@
 const Doctor = require("../models/doctorModel.js");
+const Appointment = require("../models/appointmentModel.js");
+const Department = require("../models/departmentModel.js");
+
+
+
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
@@ -293,6 +298,18 @@ const doctorDetails = async (req, res) => {
   }
 };
 
+
+//GET SPECILAISATIONS
+const getSpecialisations=async(req,res)=>{
+  try {
+    const departmentData = await Department.find();
+    const departmentNames = departmentData.map(department => department.name);
+    return res.status(200).json({ success: true, departmentNames });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  }
+}
+
 //ADD SLOT
 const addSlot = async(req, res) => {
     const { doctorData, selectedDate,_id } = req.body
@@ -345,7 +362,39 @@ const deleteSlot = async (req, res) => {
   }
 }
 
+//GETTING DOC APPOINTMENT
+const getDocAppointment = async (req, res) => {
+  try {
+    const {doctorId}=req.body
+    const appointments=await Appointment.find({doctorId:doctorId}).populate("doctorId").populate("userId")
+console.log(appointments,'TING DOC APPOINTMENTTING DOC APPOINTMENT');
+    return res
+    .status(200)
+    .json({  success: true, appointments:appointments });
 
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
+
+const cancelDocAppointment = async (req, res) => {
+  try {
+  const {apptId}=req.body
+  await Appointment.findByIdAndUpdate({_id:apptId},{$set:{isCancelled:true}})
+    return res
+    .status(200)
+    .json({       success: true,
+     message:'Appointment cancelled' });
+  
+  
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  
+  }
+  }
 
 
 
@@ -360,8 +409,11 @@ module.exports = {
     forgotPassword,
     resetPassword,
     doctorDetails,
+    getSpecialisations,
     addSlot,
-    deleteSlot
+    deleteSlot,
+    getDocAppointment,
+    cancelDocAppointment
   };
   
 

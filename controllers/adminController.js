@@ -62,7 +62,7 @@ const adminLogin = async (req, res) => {
   const departmentList=async(req,res)=>{
     try {
       const departmentData = await Department.find();
-      return res.status(200).json({ message: "Department list is here",  success: true, departmentData });
+      return res.status(200).json({ success: true, departmentData });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Something went wrong", success: false, error });
