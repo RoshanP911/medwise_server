@@ -17,6 +17,12 @@ doctorRoute.post('/add-slot',validateDoctorToken,doctorController.addSlot)
 doctorRoute.delete('/delete-slot',validateDoctorToken,doctorController.deleteSlot)
 doctorRoute.post('/appointments',validateDoctorToken,doctorController.getDocAppointment)
 doctorRoute.post('/cancel-docappointment',validateDoctorToken,doctorController.cancelDocAppointment)
+doctorRoute.patch('/endAppointment/:appId',validateDoctorToken,doctorController.endAppointment)
+
+//doctorRoute.get('/prescription',validateDoctorToken,doctorController.prescriptions)
+doctorRoute.patch('/addPrescription',validateDoctorToken,doctorController.addPrescription)
+//doctorRoute.patch('/endAppointment/:appId',validateDoctorToken,doctorController.endAppointment)
+
 
 
 

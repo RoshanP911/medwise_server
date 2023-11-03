@@ -22,13 +22,6 @@ const AppointmentSchema = new mongoose.Schema({
       appointment_id:{
         type:Number
       },
-      // reason:{
-      //   type:String
-      // },
-      // payment_mode:{
-      //   type:[String],
-      //   default: "online"
-      // },
       amount_paid:{
         type:Number,
       },
@@ -39,20 +32,13 @@ const AppointmentSchema = new mongoose.Schema({
         type:String,
         default:'online'
       },
-      // findings:{
-      //   type:String
-      // },
-      // prescription:[
-      //   {
-      //     medicine:{type:String},
-      //     frequency:{type:String}
-      //   }
-      // ],
-      // advice:{type:String},
       isCancelled:{
         type:Boolean,
         default:false
       },
+      medicines:{
+        type:Object
+      }
 
   }, {
     timestamps: true,

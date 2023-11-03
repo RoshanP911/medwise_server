@@ -418,7 +418,34 @@ await Appointment.findByIdAndUpdate({_id:apptId},{$set:{isCancelled:true}})
 }
 }
 
+const prescriptions=async(req,res)=>{
+try {
+  const id=req.body.id
+  const data = await Appointment.find({ userId:id }).populate('doctorId').populate('userId');
+ res.json(data)
+} catch (error) {
+  console.log(error);
+}
+}
 
+const rating = async (req, res) => {
+  try {
+    const data = req.body;
+    const ratings = new Review({
+      userId: data.userId,
+      doctorId: data.docId,
+      feedback: data.review,
+      rating: data.rating, 
+      userName:data.userName
+    });
+
+    const datas= await ratings.save();
+   res.json(datas)
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 
 module.exports = {
@@ -435,5 +462,7 @@ module.exports = {
   singleDoctorDetails,
   stripeBooking,
   getAppointment,
-  cancelAppointment
+  cancelAppointment,
+  prescriptions,
+  rating
 };

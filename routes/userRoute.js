@@ -20,16 +20,8 @@ userRoute.get('/singleDoctorDetails/:id',verifyToken, userController.singleDocto
 userRoute.post('/create-checkout-session',verifyToken, userController.stripeBooking)//d
 userRoute.post('/appointments',verifyToken, userController.getAppointment)//d
 userRoute.post('/cancel-appointment',verifyToken, userController.cancelAppointment)//d
-
-
-
-
-
-
-
-
-
-
+userRoute.post('/prescription',verifyToken, userController.prescriptions)
+userRoute.post('/rating',verifyToken, userController.rating)
 
 
 

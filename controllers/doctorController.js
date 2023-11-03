@@ -397,8 +397,37 @@ const cancelDocAppointment = async (req, res) => {
   }
 
 
+  const endAppointment = async (req, res) => {
+    try {
+      const appId = req.params.appId;
+      const deleteAppoint = await Appointment.findOneAndUpdate(
+        { _id: appId },
+        { isAttended: true }
+      );
+      res.json("success");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
 
+  const addPrescription = async (req, res) => {
+    try {
+      const data = req.body.payload;
+      const id = req.body.id;
+      const update = await Appointment.findOneAndUpdate(
+        { _id: id }, 
+        { medicines: data },
+        { new: true }
+      );
+  
+  
+      res.json('done');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
   
 module.exports = {
     doctorRegistration,
@@ -413,7 +442,9 @@ module.exports = {
     addSlot,
     deleteSlot,
     getDocAppointment,
-    cancelDocAppointment
+    cancelDocAppointment,
+    endAppointment,
+    addPrescription
   };
   
 
