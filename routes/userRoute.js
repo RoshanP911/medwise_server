@@ -1,6 +1,5 @@
 const express =require ("express")
 const userRoute=express.Router()
-// const { verifyToken } = require("../middlewares/jwt");
 const {validateUserToken} =require("../middlewares/jwt")
 
 const userController=require("../controllers/userController") 
@@ -23,6 +22,8 @@ userRoute.post('/appointments',validateUserToken, userController.getAppointment)
 userRoute.post('/cancel-appointment',validateUserToken, userController.cancelAppointment)//d
 userRoute.post('/prescription',validateUserToken, userController.prescriptions)
 userRoute.post('/rating',validateUserToken, userController.rating)
+userRoute.get('/get-rating/:id',validateUserToken, userController.getRating)
+
 
 
 

@@ -36,6 +36,10 @@ const AppointmentSchema = new mongoose.Schema({
         type:Boolean,
         default:false
       },
+      isCompleted:{
+        type:Boolean,
+        default:false
+      },
       medicines:{
         type:Object
       }

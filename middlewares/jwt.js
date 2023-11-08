@@ -1,51 +1,6 @@
 const jwt = require("jsonwebtoken");
 
 //USER TOKEN VALIDATION 
-// const verifyToken = (req, res, next) => {
-//   const authHeader = req.headers.authorization;
-  
-//   console.log(authHeader,'authHeader from verifyToken');
-
-//     if (!token) {
-//         console.log('no token');
-//         return res
-//         .status(200)
-//         .json({ message: 'Authentication token not present', success: false});
-//     }
-//     jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
-//       if (err) {
-//         console.log(err,'errrrrrrrrrrrrr');
-//         return
-//       }
-
-//     console.log('successs');
-//       next();
-//     });
-//   };
-
-
-
-  // const verifyToken = (req, res, next) => {
-  //   const token = req.headers.authorization?.split(" ")[1];
-  //   if (!token) {
-  //       console.log('no token');
-  //       return res
-  //       .status(200)
-  //       .json({ message: 'Authentication token not present', success: false});
-  //   }
-  //   jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
-  //     if (err) {
-  //       console.log(err,'errrrrrrrrrrrrr');
-  //       return
-  //     }
-
-  //   console.log('successs');
-  //     next();
-  //   });
-  // };
-
-
-
   const validateUserToken = (req,res,next) =>{
     const authHeader = req.headers.authorization;
     console.log(authHeader,'authHeader from validateUserToken');

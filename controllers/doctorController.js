@@ -1,6 +1,8 @@
 const Doctor = require("../models/doctorModel.js");
 const Appointment = require("../models/appointmentModel.js");
 const Department = require("../models/departmentModel.js");
+const Review = require("../models/reviewModel.js");
+
 
 
 
@@ -420,13 +422,27 @@ const cancelDocAppointment = async (req, res) => {
         { medicines: data },
         { new: true }
       );
-  
-  
       res.json('done');
     } catch (error) {
       console.log(error);
     }
   };
+
+  const doctorReviews = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const reviews = await Review.find({ doctorId: id }).sort({createdAt:-1})
+        .populate("userId")
+        .exec();
+      if (!reviews) {
+      console.log('no reviews');
+    }
+            res.status(200).json(reviews);
+    } catch (error) {
+      return next(createError(500, "Internal server error"));
+    }
+  };
+
   
   
 module.exports = {
@@ -444,7 +460,8 @@ module.exports = {
     getDocAppointment,
     cancelDocAppointment,
     endAppointment,
-    addPrescription
+    addPrescription,
+    doctorReviews
   };
   
 

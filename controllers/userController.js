@@ -1,9 +1,11 @@
 const User = require("../models/userModel.js");
 const Doctor = require("../models/doctorModel.js");
 const Appointment = require("../models/appointmentModel.js");
+const Review= require("../models/reviewModel.js");
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");//const stripe = stripePackage(`${process.env.STRIPE_KEY}`);
+const reviewModel = require("../models/reviewModel.js");
 require("dotenv").config();
 
 //NEW USER SIGNUP
@@ -384,6 +386,19 @@ const stripe = require('stripe')(`${process.env.STRIPE_KEY}`);
 };
 
 
+// const findDoctors= async (req, res) => {
+//   try {
+//     const allDoctors = await Doctor.find({ is_approved:true });
+//     return res
+//     .status(200)
+//     .json({ message: 'allDoctors', success: true, allDoctors:allDoctors });
+
+
+//   } catch (error) {
+//     res.status(500).json({ message: "Error while fetching doctor", success: false, error });
+//   }
+// }
+
 
 
 
@@ -428,15 +443,18 @@ try {
 }
 }
 
+//RATING
 const rating = async (req, res) => {
   try {
     const data = req.body;
+    const {review, rating, doctorId, userId,userName}=data
+
     const ratings = new Review({
-      userId: data.userId,
-      doctorId: data.docId,
-      feedback: data.review,
-      rating: data.rating, 
-      userName:data.userName
+      userId: userId,
+      doctorId: doctorId,
+      feedback: review,
+      rating: rating, 
+      userName:userName
     });
 
     const datas= await ratings.save();
@@ -444,6 +462,32 @@ const rating = async (req, res) => {
 
   } catch (error) {
     console.log(error);
+  }
+};
+
+
+const getRating = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { page, limit } = req.query;
+    const skip = (page - 1) * limit;
+    const allRatings = await Review.find({ doctorId: id })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 })
+      .populate("userId")
+      .exec();
+    if (!allRatings) {
+      console.log("No reviews found");
+    }
+    const result = await Review.find({ doctorId: id });
+    if (result.length === 0) return res.json({ allRatings, averageRating: 0 });
+    const totalRatings = result.reduce((acc, rating) => acc + rating.rating, 0);
+    const averageRating = (totalRatings / result.length).toFixed(1);
+    res.status(200).json({ allRatings, averageRating });
+  } catch (error) {
+    console.log(error);
+    // next(createError(500, `Internal server error`));
   }
 };
 
@@ -464,5 +508,6 @@ module.exports = {
   getAppointment,
   cancelAppointment,
   prescriptions,
-  rating
+  rating,
+  getRating
 };
