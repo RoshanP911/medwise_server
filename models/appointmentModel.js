@@ -17,16 +17,10 @@ const AppointmentSchema = new mongoose.Schema({
       },
       status: {
         type: String,
-        default: "pending",
+        default: "Confirmed",
       },
       appointment_id:{
         type:Number
-      },
-      reason:{
-        type:String
-      },
-      payment_mode:{
-        type:[String],
       },
       amount_paid:{
         type:Number,
@@ -34,20 +28,21 @@ const AppointmentSchema = new mongoose.Schema({
       payment_status:{
         type:String
       },
-      appointment_mode:{
+      payment_mode:{
         type:String,
-        default:'offline'
+        default:'online'
       },
-      findings:{
-        type:String
+      isCancelled:{
+        type:Boolean,
+        default:false
       },
-      prescription:[
-        {
-          medicine:{type:String},
-          frequency:{type:String}
-        }
-      ],
-      advice:{type:String}
+      isCompleted:{
+        type:Boolean,
+        default:false
+      },
+      medicines:{
+        type:Object
+      }
 
   }, {
     timestamps: true,

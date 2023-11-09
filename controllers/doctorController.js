@@ -1,4 +1,11 @@
 const Doctor = require("../models/doctorModel.js");
+const Appointment = require("../models/appointmentModel.js");
+const Department = require("../models/departmentModel.js");
+const Review = require("../models/reviewModel.js");
+
+
+
+
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
@@ -293,6 +300,18 @@ const doctorDetails = async (req, res) => {
   }
 };
 
+
+//GET SPECILAISATIONS
+const getSpecialisations=async(req,res)=>{
+  try {
+    const departmentData = await Department.find();
+    const departmentNames = departmentData.map(department => department.name);
+    return res.status(200).json({ success: true, departmentNames });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  }
+}
+
 //ADD SLOT
 const addSlot = async(req, res) => {
     const { doctorData, selectedDate,_id } = req.body
@@ -345,11 +364,86 @@ const deleteSlot = async (req, res) => {
   }
 }
 
+//GETTING DOC APPOINTMENT
+const getDocAppointment = async (req, res) => {
+  try {
+    const {doctorId}=req.body
+    const appointments=await Appointment.find({doctorId:doctorId}).populate("doctorId").populate("userId")
+console.log(appointments,'TING DOC APPOINTMENTTING DOC APPOINTMENT');
+    return res
+    .status(200)
+    .json({  success: true, appointments:appointments });
+
+
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 
 
+const cancelDocAppointment = async (req, res) => {
+  try {
+  const {apptId}=req.body
+  await Appointment.findByIdAndUpdate({_id:apptId},{$set:{isCancelled:true}})
+    return res
+    .status(200)
+    .json({       success: true,
+     message:'Appointment cancelled' });
+  
+  
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  
+  }
+  }
 
 
+  const endAppointment = async (req, res) => {
+    try {
+      const appId = req.params.appId;
+      const deleteAppoint = await Appointment.findOneAndUpdate(
+        { _id: appId },
+        { isAttended: true }
+      );
+      res.json("success");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  const addPrescription = async (req, res) => {
+    try {
+      const data = req.body.payload;
+      const id = req.body.id;
+      const update = await Appointment.findOneAndUpdate(
+        { _id: id }, 
+        { medicines: data },
+        { new: true }
+      );
+      res.json('done');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const doctorReviews = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const reviews = await Review.find({ doctorId: id }).sort({createdAt:-1})
+        .populate("userId")
+        .exec();
+      if (!reviews) {
+      console.log('no reviews');
+    }
+            res.status(200).json(reviews);
+    } catch (error) {
+      return next(createError(500, "Internal server error"));
+    }
+  };
+
+  
   
 module.exports = {
     doctorRegistration,
@@ -360,8 +454,14 @@ module.exports = {
     forgotPassword,
     resetPassword,
     doctorDetails,
+    getSpecialisations,
     addSlot,
-    deleteSlot
+    deleteSlot,
+    getDocAppointment,
+    cancelDocAppointment,
+    endAppointment,
+    addPrescription,
+    doctorReviews
   };
   
 
