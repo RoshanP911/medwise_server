@@ -6,13 +6,16 @@ const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");//const stripe = stripePackage(`${process.env.STRIPE_KEY}`);
 const reviewModel = require("../models/reviewModel.js");
+const userRepository = require("../repository/user-repository.js");
 require("dotenv").config();
 
 //NEW USER SIGNUP
 const userRegistration = async (req, res) => {
   const { name, email, password, mobile } = req.body;
   try {
-    const existingUser = await User.findOne({ email: email });
+    // const existingUser = await User.findOne({ email: email });
+    const existingUser = await userRepository.findUserByEmail(email);
+
     console.log(existingUser, 'existingUser');
     if (existingUser) {
       if (existingUser.is_verified) {
@@ -49,13 +52,14 @@ const userRegistration = async (req, res) => {
       const hashPassword = await bcryptjs.hash(password, 10);
 
       // Create a new user
-      const newUser = await User.create({
-        name: name,
-        email: email,
-        password: hashPassword,
-        mobile: mobile,
-        otp: otp,
-      });
+      const newUser = await userRepository.creatNewUser(name,email,hashPassword,mobile,otp)
+      // const newUser = await User.create({
+      //   name: name,
+      //   email: email,
+      //   password: hashPassword,
+      //   mobile: mobile,
+      //   otp: otp,
+      // });
 
       if (newUser) {
         await sendMail(email, otp);
@@ -157,8 +161,9 @@ const userLogin = async (req, res) => {
     const { email, password } = req.body
     
     if (email && password) {
-      const isUser = await User.findOne({ email: email });
+      const isUser = await userRepository.findUserByEmail(email)
       if (isUser) {
+        console.log(isUser)
         const passwordsMatch=await bcryptjs.compare(password, isUser.password)
         const verified=isUser.is_verified         //To check if user is verified
 
