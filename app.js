@@ -37,11 +37,5 @@ const server=app.listen(PORT, () => {
 const io=new Server(server,{ cors: true })
 socketManager(io);
 
-// io.on("connection",(socket)=>{
-//   console.log('socket connected',socket.id);
-  // socket.on("room:join",(data)=>{
-  //   console.log(data,'data');
-  // })
-// })
 
 

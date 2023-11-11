@@ -9,6 +9,4 @@ module.exports = {
     creatNewUser : async (name,email,password,mobile,otp) => {
         return await Model.create({name,email,password,mobile,otp}) 
     },
-
-    
 }

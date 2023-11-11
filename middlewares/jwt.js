@@ -3,14 +3,14 @@ const jwt = require("jsonwebtoken");
 //USER TOKEN VALIDATION 
   const validateUserToken = (req,res,next) =>{
     const authHeader = req.headers.authorization;
-    console.log(authHeader,'authHeader from validateUserToken');
+    // console.log(authHeader,'authHeader from validateUserToken');
     if(authHeader){
       const token=authHeader.split(" ")[1]
       jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
           res.json("unauthorized");
         }
-        console.log('successs from validateUserToken');
+        // console.log('successs from validateUserToken');
         next();
       });
     } else {
@@ -21,14 +21,14 @@ const jwt = require("jsonwebtoken");
 //DOCTOR TOKEN VALIDATION 
   const validateDoctorToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    console.log(authHeader,'authHeader from validateDoctorToken');
+    // console.log(authHeader,'authHeader from validateDoctorToken');
     if (authHeader) {
       const token = authHeader.split(" ")[1];
       jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
           res.json("unauthorized");
         }
-        console.log('successs from validateDocToken');
+        // console.log('successs from validateDocToken');
         next();
       });
     } else {
@@ -50,7 +50,7 @@ const validateAdminToken = (req, res, next) => {
       if (err) {
         res.json("unauthorized");
       }
-      console.log('successs from validateAdminToken');
+      // console.log('successs from validateAdminToken');
       next();
     });
   } 
