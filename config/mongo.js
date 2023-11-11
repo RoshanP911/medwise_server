@@ -1,13 +1,13 @@
 //MONGOOSE CONNECTION
-const mongoose = require("mongoose");
+const {connect} = require("mongoose");
 // mongoose.set("strictQuery", false);
 
 const dbConnect = async() => {
   try {
-    await mongoose.connect(process.env.MONGODB_URL);
+    await connect(process.env.MONGODB_URL);
     console.log("Db connected");
   } catch (error) {   
-     console.log('db error');
+     console.log('db error',process.env.MONGODB_URL);
 
     // throw error
   }

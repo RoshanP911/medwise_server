@@ -36,7 +36,7 @@ const AppointmentSchema = new mongoose.Schema({
         type:Boolean,
         default:false
       },
-      isCompleted:{
+      isAttended:{
         type:Boolean,
         default:false
       },
