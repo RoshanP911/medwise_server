@@ -11,6 +11,10 @@ const ReviewSchema = new mongoose.Schema({
     ref: "doctor",
     required: true,
   },
+  isReviewed:{
+    type:Boolean,
+    default:false
+  },
   userName: { type: String },
   rating: { type: Number, required: true },
   feedback: { type: String },
