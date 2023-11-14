@@ -32,13 +32,6 @@ const userSchema = new mongoose.Schema(
     token: {
       type: String,
     },
-    profilePic: {
-      type: String,
-    },
-
-    documents: {
-      type: Array,
-    },
     image: {
       type: String,
     },
