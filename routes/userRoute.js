@@ -23,6 +23,7 @@ userRoute.post('/cancel-appointment',validateUserToken, userController.cancelApp
 userRoute.post('/prescription',validateUserToken, userController.prescriptions)
 userRoute.post('/rating',validateUserToken, userController.rating)
 userRoute.get('/get-rating/:id',validateUserToken, userController.getRating)
+userRoute.post('/get-appointments-completed',validateUserToken, userController.getCompletedAppointments)
 
 
 

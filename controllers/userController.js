@@ -40,13 +40,11 @@ const userRegistration = async (req, res) => {
         await sendMail(email, otp);
 
         console.log(existingUser, "updatedUser");
-        return res
-          .status(200)
-          .json({
-            user: existingUser,
-            message: "Please check your mail for OTP",
-            success: true,
-          });
+        return res.status(200).json({
+          user: existingUser,
+          message: "Please check your mail for OTP",
+          success: true,
+        });
       }
     } else {
       // Generate OTP
@@ -75,13 +73,11 @@ const userRegistration = async (req, res) => {
         await sendMail(email, otp);
 
         console.log(newUser, "newUser");
-        return res
-          .status(200)
-          .json({
-            user: newUser,
-            message: "Please check your mail for OTP",
-            success: true,
-          });
+        return res.status(200).json({
+          user: newUser,
+          message: "Please check your mail for OTP",
+          success: true,
+        });
       }
     }
   } catch (error) {
@@ -133,13 +129,11 @@ const verifyOtp = async (req, res) => {
         if (userr) {
           userr.is_verified = true;
           userr.save();
-          res
-            .status(201)
-            .json({
-              message: "OTP verified successfully",
-              success: true,
-              userData: user,
-            });
+          res.status(201).json({
+            message: "OTP verified successfully",
+            success: true,
+            userData: user,
+          });
         }
       } else {
         res.status(200).json({ message: "Incorrect otp", success: false });
@@ -197,14 +191,12 @@ const userLogin = async (req, res) => {
             expiresIn: "24h",
           });
 
-          return res
-            .status(200)
-            .json({
-              message: "Login Successful",
-              token: token,
-              success: true,
-              isUser,
-            });
+          return res.status(200).json({
+            message: "Login Successful",
+            token: token,
+            success: true,
+            isUser,
+          });
         } else {
           return res
             .status(400)
@@ -332,13 +324,11 @@ const editProfile = async (req, res) => {
       { new: true }
     );
 
-    return res
-      .status(200)
-      .json({
-        message: "Changes saved successfully",
-        success: true,
-        user: updatedUser,
-      });
+    return res.status(200).json({
+      message: "Changes saved successfully",
+      success: true,
+      user: updatedUser,
+    });
   } catch (error) {
     res
       .status(500)
@@ -518,6 +508,22 @@ const getRating = async (req, res, next) => {
   }
 };
 
+const getCompletedAppointments = async (req, res, next) => {
+  try {
+    let { userId } = req.body;
+    const appointments = await Appointment.find({
+      isAttended: true,
+      userId: userId,
+    }).populate("doctorId");
+    if (!appointments) {
+      console.log("No appointments found");
+    }
+    res.status(200).json({ appointments });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   userRegistration,
   sendMail,
@@ -536,4 +542,5 @@ module.exports = {
   prescriptions,
   rating,
   getRating,
+  getCompletedAppointments,
 };
