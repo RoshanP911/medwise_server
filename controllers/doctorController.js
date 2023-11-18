@@ -212,13 +212,7 @@ const doctorLogin = async (req, res) => {
         .status(400)
         .json({ message: "Account blocked by admin", success: false });
     }
-
-    const payload = { userId: doctor._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
-    //         const token = jwt.sign(payload, "secreTkey", { expiresIn: "2h" });
-
+    const token = jwt.sign({userId: doctor._id, role: doctor.role }, process.env.JWT_SECRET);
     return res
       .status(200)
       .json({ message: "Login Successful", token, success: true, doctor });

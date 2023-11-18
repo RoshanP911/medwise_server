@@ -1,7 +1,5 @@
-import jwt from 'jsonwebtoken'
 import User from '../models/userModel.js'
 import Doctor from '../models/doctorModel.js'
-import { createError } from '../utils/error.js';
 
 export const checkUserBlock = async (req, res, next) => {
 

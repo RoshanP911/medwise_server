@@ -186,10 +186,11 @@ const userLogin = async (req, res) => {
         const verified = isUser.is_verified; //To check if user is verified
 
         if (passwordsMatch && verified) {
-          const payload = { userId: isUser._id };
-          const token = jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: "24h",
-          });
+          const token = jwt.sign({ userId: isUser._id, role: isUser.role }, process.env.JWT_SECRET);
+          if (!token) {
+            return res.status(500).json({ message: "Failed to generate token", success: false });
+          }
+ 
 
           return res.status(200).json({
             message: "Login Successful",
