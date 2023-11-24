@@ -2,6 +2,8 @@ const Admin = require("../models/adminModel");
 const User = require("../models/userModel.js");
 const Department = require("../models/departmentModel");
 const Doctor = require("../models/doctorModel");
+const Appointment = require("../models/appointmentModel.js");
+
 const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 
@@ -129,17 +131,61 @@ const createDepartment = async (req, res) => {
   }
 };
 
+//USER BLOCK/UNBLOCK
+const userBlockUnblock = async (req, res) => {
+  const { Id } = req.body;
+  const blockUserData = await User.findById(Id);
+  const block_status = blockUserData.is_blocked;
+
+  try {
+    const blockUser = await User.findByIdAndUpdate(
+      Id,
+      { $set: { is_blocked: !block_status } },
+      { new: true }
+    );
+
+    if (blockUser.is_blocked === true) {
+      return res
+        .status(200)
+        .json({
+          message: "User blocked successfully",
+          success: true,
+          data: blockUser,
+        });
+    } else {
+      return res
+        .status(200)
+        .json({
+          message: "User unblocked successfully",
+          success: true,
+          data: blockUser,
+        });
+    }
+  } catch (error) {
+    console.error(error);
+
+    return res
+      .status(500)
+      .json({
+        message: "Error while blocking User",
+        success: false,
+        error: error.message,
+      });
+  }
+
+};
+
 //DOCTOR BLOCK/UNBLOCK
 
 const doctorBlockUnblock = async (req, res) => {
-  const { doctorId } = req.body;
+  const { Id } = req.body;
 
-  const blockUserData = await Doctor.findById(doctorId);
+  const blockUserData = await Doctor.findById(Id);
   const block_status = blockUserData.is_blocked;
 
   try {
     const blockDoctor = await Doctor.findByIdAndUpdate(
-      doctorId,
+      Id,
       { $set: { is_blocked: !block_status } },
       { new: true }
     );
@@ -176,14 +222,14 @@ const doctorBlockUnblock = async (req, res) => {
 
 //DOCTOR APPROVE
 const doctorApprove = async (req, res) => {
-  const { doctorId } = req.body;
+  const { Id } = req.body;
 
-  const approveDoctorData = await Doctor.findById(doctorId);
+  const approveDoctorData = await Doctor.findById(Id);
   const approve_status = approveDoctorData.is_approved;
 
   try {
     const approveDoctor = await Doctor.findByIdAndUpdate(
-      doctorId,
+      Id,
       { $set: { is_approved: !approve_status } },
       { new: true }
     );
@@ -219,8 +265,8 @@ const doctorApprove = async (req, res) => {
 };
 
 const docDocument = async (req, res) => {
-  const { doctorId } = req.body;
-  const DoctorData = await Doctor.findById(doctorId);
+  const { Id } = req.body;
+  const DoctorData = await Doctor.findById(Id);
   try {
     return res
       .status(200)
@@ -260,6 +306,77 @@ const docDetails = async (req, res) => {
   }
 };
 
+const allBookings = async (req, res, next) => {
+  try {
+    const bookings = await Appointment.find()
+      .sort({ createdAt: -1 })
+      .populate("userId")
+      .populate("doctorId")
+      .exec();
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({
+        message: "Internal server error",
+        success: false,
+        error: error.message,
+      });
+    
+  }
+};
+
+
+const userCount = async (req, res, next) => {
+  try {
+    const userCount = await User.countDocuments();
+    if (!userCount) return res
+    .status(500)
+    .json({
+      message: "No users found",
+      success: false,
+      error: error.message,
+    });
+    res.status(200).json(userCount);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const doctorCount = async (req, res, next) => {
+  try {
+    const doctorCount = await Doctor.countDocuments();
+    if (!doctorCount) return res
+      .status(500)
+      .json({
+        message: "No doctors found",
+        success: false,
+        error: error.message,
+      });
+    res.status(200).json(doctorCount);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const totalRevenue = async (req, res, next) => {
+  try {
+    const sum = await Appointment.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalAmountPaid: { $sum: "$amount_paid" },
+        },
+      },
+    ]);
+
+    res.status(200).json({ totalAmountPaid: sum[0]?.totalAmountPaid || 0 });
+  } catch (error) {}
+};
+
 module.exports = {
   adminLogin,
   userList,
@@ -267,7 +384,14 @@ module.exports = {
   departmentList,
   doctorList,
   doctorBlockUnblock,
+  userBlockUnblock,
   doctorApprove,
   docDocument,
   docDetails,
+  allBookings,
+  userCount,
+  doctorCount,
+  totalRevenue
+
+
 };

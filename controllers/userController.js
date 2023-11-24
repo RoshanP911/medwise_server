@@ -178,7 +178,18 @@ const userLogin = async (req, res) => {
 
     if (email && password) {
       const isUser = await userRepository.findUserByEmail(email);
+      
+    
+
+
       if (isUser) {
+
+        if (isUser.is_blocked) {
+          return res
+            .status(400)
+            .json({ message: "Account blocked by admin", success: false });
+        }
+        
         const passwordsMatch = await bcryptjs.compare(
           password,
           isUser.password
@@ -337,14 +348,7 @@ const editProfile = async (req, res) => {
   }
 };
 
-//USER BLOCK/UNBLOCK
-const userBlock = async (req, res) => {
-  const { userId } = req.body;
-  console.log(userId, "userId");
 
-  const blockUserData = await User.findById(userId);
-  console.log(blockUserData, "blockUserDatablockUserData");
-};
 
 //FIND DOCTORS
 const findDoctors = async (req, res) => {
@@ -465,25 +469,63 @@ const prescriptions = async (req, res) => {
 };
 
 //RATING
+// const rating = async (req, res) => {
+//   try {
+//     const data = req.body;
+//     const { review, rating, doctorId, userId, userName } = data;
+
+//     const ratings = new Review({
+//       userId: userId,
+//       doctorId: doctorId,
+//       feedback: review,
+//       rating: rating,
+//       userName: userName,
+//     });
+
+//     const datas = await ratings.save();
+//     res.json(datas);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+
 const rating = async (req, res) => {
   try {
     const data = req.body;
     const { review, rating, doctorId, userId, userName } = data;
+    // console.log('juiooooooooooooo');
 
-    const ratings = new Review({
-      userId: userId,
-      doctorId: doctorId,
-      feedback: review,
-      rating: rating,
-      userName: userName,
-    });
+    // Check if a review already exists for the given doctorId and userId
+    const existingReview = await Review.findOne({ doctorId, userId });
 
-    const datas = await ratings.save();
-    res.json(datas);
+    if (existingReview) {
+      // Update existing review
+      existingReview.feedback = review;
+      existingReview.rating = rating;
+      existingReview.userName = userName;
+
+      const updatedReview = await existingReview.save();
+      res.json(updatedReview);
+    } else {
+      // Create a new review if it doesn't exist
+      const newReview = new Review({
+        userId,
+        doctorId,
+        feedback: review,
+        rating,
+        userName,
+      });
+
+      const savedReview = await newReview.save();
+      res.json(savedReview);
+    }
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 const getRating = async (req, res, next) => {
   try {
@@ -509,11 +551,41 @@ const getRating = async (req, res, next) => {
   }
 };
 
-const getCompletedAppointments = async (req, res, next) => {
+
+const editReview = async (req, res, next) => {
+  try {
+    const { userId,doctorId } = req.body
+    // console.log(userId,'userrId');
+    // console.log(doctorId,'doctorrId');
+
+    // const { page, limit } = req.query;
+    // const skip = (page - 1) * limit;
+    const allRatings = await Review.find({ doctorId: doctorId,userId:userId })
+      // .skip(skip)
+      // .limit(parseInt(limit))
+      // .sort({ createdAt: -1 })
+      // .populate("userId")
+      // .exec();
+      // console.log(allRatings,'houuu rrrr uuuu ');
+
+    // if (!allRatings) {
+    //   console.log("No reviews found");
+    // }
+    // const result = await Review.find({ doctorId: id });
+    // if (result.length === 0) return res.json({ allRatings, averageRating: 0 });
+    // const totalRatings = result.reduce((acc, rating) => acc + rating.rating, 0);
+    // const averageRating = (totalRatings / result.length).toFixed(1);
+    res.status(200).json({success: true, allRatings });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getCancelledAppointments = async (req, res, next) => {
   try {
     let { userId } = req.body;
     const appointments = await Appointment.find({
-      isAttended: true,
+      isCancelled: true,
       userId: userId,
     }).populate("doctorId");
     if (!appointments) {
@@ -525,6 +597,23 @@ const getCompletedAppointments = async (req, res, next) => {
   }
 };
 
+const walletPayment = async (req, res, next) => {
+  try {
+    let { userId } = req.body;
+    const appointments = await Appointment.find({
+      isCancelled: true,
+      userId: userId,
+    }).populate("doctorId");
+    if (!appointments) {
+      console.log("No appointments found");
+    }
+    res.status(200).json({ appointments });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
 module.exports = {
   userRegistration,
   sendMail,
@@ -534,7 +623,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   editProfile,
-  userBlock,
   findDoctors,
   singleDoctorDetails,
   stripeBooking,
@@ -543,5 +631,6 @@ module.exports = {
   prescriptions,
   rating,
   getRating,
-  getCompletedAppointments,
+  getCancelledAppointments,
+  editReview
 };
