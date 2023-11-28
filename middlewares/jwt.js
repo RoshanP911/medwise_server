@@ -1,70 +1,32 @@
 const jwt = require("jsonwebtoken");
 
-//USER TOKEN VALIDATION 
-  const validateUserToken = (req,res,next) =>{
-    const authHeader = req.headers.authorization;
-    // console.log(authHeader,'authHeader from validateUserToken');
-    if(authHeader){
-      const token=authHeader.split(" ")[1]
-      jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-          res.json("unauthorized");
-        }
-        // console.log('successs from validateUserToken');
-        next();
-      });
-    } else {
+// TOKEN VALIDATION
+  const verifyToken = (req,res,next) =>{
+        const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
       res.json("unauthorized");
     }
-  }
+    jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
 
-//DOCTOR TOKEN VALIDATION 
-  const validateDoctorToken = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    // console.log(authHeader,'authHeader from validateDoctorToken');
-    if (authHeader) {
-      const token = authHeader.split(" ")[1];
-      jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-          res.json("unauthorized");
-        }
-        // console.log('successs from validateDocToken');
-        next();
-      });
-    } else {
-      res.json("unauthorized");
-    }
-  };
-
-
-
-
-
-//ADMIN TOKEN VALIDATION     TO validate the access token provided in the Authorization header of an incoming HTTP request.
-const validateAdminToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  console.log(authHeader);
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         res.json("unauthorized");
       }
-      // console.log('successs from validateAdminToken');
+      res.locals.userId = decodedToken.userId;
+      res.locals.userRole = decodedToken.role;
       next();
     });
-  } 
-  else {
-    res.json("unauthorized");
   }
-};
 
+ const verifyUser = (role) =>(req, res, next) => {
+    verifyToken(req, res, () => {
 
+      if (res.locals.userRole === role) {
+        console.log('new user tokennnn');
+        next();
+      } else {
+        res.json("unauthorized");
+      }
+    });
+  };
 
-
-
-
-
-
- module.exports={validateAdminToken,validateDoctorToken,validateUserToken}
-
+ module.exports={verifyToken,verifyUser}

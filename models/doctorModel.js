@@ -87,6 +87,7 @@ const doctorSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    payments: { type: Number, default: 0 },
   },
   {
     timestamps: true,

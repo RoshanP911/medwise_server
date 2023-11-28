@@ -2,7 +2,8 @@ const express =require ("express")
 const doctorRoute=express.Router()
 
 const doctorController=require("../controllers/doctorController") 
-const { validateDoctorToken } = require("../middlewares/jwt")
+const { verifyUser } = require("../middlewares/jwt")
+const { checkUserBlock } = require("../middlewares/blockCheck")
 
 //  doctor is added 
 doctorRoute.post('/register', doctorController.doctorRegistration)
@@ -13,13 +14,18 @@ doctorRoute.post('/forgot-password',doctorController.forgotPassword)
 doctorRoute.post('/reset-password/:id/:token',doctorController.resetPassword)
 doctorRoute.post('/details',doctorController.doctorDetails)
 doctorRoute.get('/getSpecialisations',doctorController.getSpecialisations) //
-doctorRoute.post('/add-slot',validateDoctorToken,doctorController.addSlot)
-doctorRoute.delete('/delete-slot',validateDoctorToken,doctorController.deleteSlot)
-doctorRoute.post('/appointments',validateDoctorToken,doctorController.getDocAppointment)
-doctorRoute.post('/cancel-docappointment',validateDoctorToken,doctorController.cancelDocAppointment)
-doctorRoute.patch('/endAppointment/:appId',validateDoctorToken,doctorController.endAppointment)
-doctorRoute.patch('/addPrescription',validateDoctorToken,doctorController.addPrescription)
-doctorRoute.get('/review/:id',validateDoctorToken,doctorController.doctorReviews)
+doctorRoute.post('/add-slot',verifyUser('doctor'),checkUserBlock, doctorController.addSlot)
+doctorRoute.delete('/delete-slot',verifyUser('doctor'),checkUserBlock,doctorController.deleteSlot)
+doctorRoute.post('/appointments',verifyUser('doctor'),checkUserBlock,doctorController.getDocAppointment)
+doctorRoute.post('/cancel-docappointment',verifyUser('doctor'),checkUserBlock,doctorController.cancelDocAppointment)
+doctorRoute.patch('/endAppointment/:appId',doctorController.endAppointment)
+doctorRoute.patch('/addPrescription',verifyUser('doctor'),checkUserBlock,doctorController.addPrescription)
+doctorRoute.get('/review/:id',verifyUser('doctor'),checkUserBlock,doctorController.doctorReviews)
+
+
+doctorRoute.get('/total-appointments/:id',verifyUser('doctor'),doctorController.totalAppointments)
+doctorRoute.get('/appointment-list/:id',verifyUser('doctor'),doctorController.appointmentList)
+doctorRoute.get('/appt-status-count/:id',verifyUser('doctor'),doctorController.apptStatusCount)
 
 
 

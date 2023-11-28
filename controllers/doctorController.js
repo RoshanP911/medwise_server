@@ -212,13 +212,7 @@ const doctorLogin = async (req, res) => {
         .status(400)
         .json({ message: "Account blocked by admin", success: false });
     }
-
-    const payload = { userId: doctor._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
-    //         const token = jwt.sign(payload, "secreTkey", { expiresIn: "2h" });
-
+    const token = jwt.sign({userId: doctor._id, role: doctor.role }, process.env.JWT_SECRET);
     return res
       .status(200)
       .json({ message: "Login Successful", token, success: true, doctor });
@@ -462,7 +456,42 @@ const cancelDocAppointment = async (req, res) => {
 const endAppointment = async (req, res) => {
   try {
     const appId = req.params.appId;
-    await Appointment.findOneAndUpdate({ _id: appId }, { isAttended: true });
+  //  await Appointment.findOneAndUpdate({ _id: appId }, { isAttended: true });
+    const updateAppointment=await Appointment.findOneAndUpdate({ _id: appId }, { isAttended: true });
+
+    // const updateAppointment = await Appointment.findByIdAndUpdate(
+    //   appId,
+    //   { isAttended: true },
+    //   { new: true }
+    // );
+console.log(updateAppointment,'updateappptttttrtt');
+    if (!updateAppointment)
+    return res
+    .status(404)
+    .json({
+      message: "Appointments not found",
+      success: false,
+      error: error.message,
+    });
+
+    const docId = updateAppointment.doctorId;
+    const doctor = await Doctor.findById(docId);
+console.log(doctor?.payments,'docpaymentsssssss');
+    if (!doctor)
+    return res
+    .status(404)
+    .json({
+      message: "Doctor not found",
+      success: false,
+      error: error.message,
+    });
+    const amount =doctor?.payments + (doctor.videoCallFees * 80) / 100;
+  await Doctor.findByIdAndUpdate(
+    docId,
+    { payments: amount },
+    { new: true }
+  );
+
     res.json("success");
   } catch (error) {
     console.log(error);
@@ -498,8 +527,66 @@ const doctorReviews = async (req, res, next) => {
     }
     res.status(200).json(reviews);
   } catch (error) {
-    // return next(createError(500, "Internal server error"));
     console.log(error,'error');
+  }
+};
+
+
+
+
+const appointmentList = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const appointments = await Appointment.find({ doctorId: id })
+      .sort({ createdAt: -1 })
+      .populate("userId")
+      .populate("doctorId")
+      .exec();
+
+    if (!appointments) return res
+      .status(404)
+      .json({
+        message: "Appointments not found",
+        success: false,
+        error: error.message,
+      });
+    res.status(200).json(appointments);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const totalAppointments = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const totalAppointments = await Appointment.find({ doctorId: id }).count();
+          if (!totalAppointments) return res
+      .status(404)
+      .json({
+        message: "Appointments not found",
+        success: false,
+        // error: error.message,
+      });
+    res.status(200).json(totalAppointments);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+const apptStatusCount = async (req, res, next) => {
+  try {
+    const { id } = req.params;    
+    const appointmentsCount = await Appointment.find({ doctorId: id }).countDocuments();
+    const totalCancelledCount = await Appointment.find({ doctorId: id, isCancelled:true}).countDocuments();
+    const totalAttendedCount = await Appointment.find({ doctorId: id,isAttended:true }).countDocuments();
+ const totalConfirmedCount=appointmentsCount-(totalCancelledCount+totalAttendedCount)
+ 
+    res.status(200).json({ totalCancelledCount,totalAttendedCount,totalConfirmedCount });
+  } catch (error) {
+    next(error); 
   }
 };
 
@@ -520,4 +607,7 @@ module.exports = {
   endAppointment,
   addPrescription,
   doctorReviews,
+  appointmentList,
+  totalAppointments,
+  apptStatusCount
 };
