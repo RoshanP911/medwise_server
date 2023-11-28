@@ -24,7 +24,12 @@ userRoute.post('/rating',verifyUser('user'), checkUserBlock,userController.ratin
 userRoute.get('/get-rating/:id',verifyUser('user'),checkUserBlock, userController.getRating)
 userRoute.post('/get-appointments-cancelled',verifyUser('user'),checkUserBlock, userController.getCancelledAppointments)
 userRoute.post('/edit-review',verifyUser('user'),checkUserBlock, userController.editReview)
-//userRoute.post('/wallet',verifyUser('user'),checkUserBlock, userController.walletPayment)
+userRoute.post('/wallet-update',verifyUser('user'),checkUserBlock, userController.walletPayment)
+userRoute.post('/fetch-wallet-balance',verifyUser('user'),checkUserBlock, userController.fetchWalletBalance)
+userRoute.post('/wallet-payment',verifyUser('user'),checkUserBlock, userController.walletPayment)
+
+
+
 
 
 

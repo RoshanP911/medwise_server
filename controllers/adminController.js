@@ -374,7 +374,39 @@ const totalRevenue = async (req, res, next) => {
     ]);
 
     res.status(200).json({ totalAmountPaid: sum[0]?.totalAmountPaid || 0 });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+
+  }
+};
+
+const apptStatusCount = async (req, res, next) => {
+  try {
+     const apptCount = await Appointment.countDocuments();
+const apptStatusCount = await Appointment.aggregate([
+  {
+    $group: {
+      _id: null,
+      cancelledCount: { $sum: { $cond: [{ $eq: ["$isCancelled", true] }, 1, 0] } },
+      attendedCount: { $sum: { $cond: [{ $eq: ["$isAttended", true] }, 1, 0] } }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      totalCancelledCount: "$cancelledCount",
+      totalAttendedCount: "$attendedCount",
+      total: { $add: ["$cancelledCount", "$attendedCount"] }
+    }
+  }
+]);
+    const { totalCancelledCount, totalAttendedCount, total } = apptStatusCount[0];
+const totalConfirmedCount=apptCount-total
+    res.status(200).json({ totalCancelledCount,totalAttendedCount,totalConfirmedCount });
+  } catch (error) {
+
+    console.log(error);
+  }
 };
 
 module.exports = {
@@ -391,7 +423,8 @@ module.exports = {
   allBookings,
   userCount,
   doctorCount,
-  totalRevenue
+  totalRevenue,
+  apptStatusCount
 
 
 };

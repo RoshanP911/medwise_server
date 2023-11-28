@@ -25,6 +25,8 @@ doctorRoute.get('/review/:id',verifyUser('doctor'),checkUserBlock,doctorControll
 
 doctorRoute.get('/total-appointments/:id',verifyUser('doctor'),doctorController.totalAppointments)
 doctorRoute.get('/appointment-list/:id',verifyUser('doctor'),doctorController.appointmentList)
+doctorRoute.get('/appt-status-count/:id',verifyUser('doctor'),doctorController.apptStatusCount)
+
 
 
 

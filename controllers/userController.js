@@ -441,13 +441,31 @@ const getAppointment = async (req, res) => {
   }
 };
 
+
+//CANCEL APPOINTMENT
 const cancelAppointment = async (req, res) => {
   try {
     const { apptId } = req.body;
-    await Appointment.findByIdAndUpdate(
+    const newAppt=await Appointment.findByIdAndUpdate(
       { _id: apptId },
       { $set: { isCancelled: true } }
     );
+
+    const userId=newAppt.userId
+    const total=Number((newAppt.amount_paid * 60) / 100)
+console.log(total,'wallet to updateee');
+    console.log(newAppt,'neww appttt');
+
+    const user =  await User.findByIdAndUpdate(userId, {
+      wallet:total
+        });
+
+        console.log(user,'user form cancel appttttt');
+
+
+
+
+
     return res
       .status(200)
       .json({ success: true, message: "Appointment cancelled" });
@@ -597,21 +615,69 @@ const getCancelledAppointments = async (req, res, next) => {
   }
 };
 
-const walletPayment = async (req, res, next) => {
+
+//WALLET
+//TO UPDATE WALLET IN USER MODEL
+const walletUpdate = async (req, res, next) => {
   try {
-    let { userId } = req.body;
-    const appointments = await Appointment.find({
-      isCancelled: true,
-      userId: userId,
-    }).populate("doctorId");
-    if (!appointments) {
-      console.log("No appointments found");
+    let { userId,total } = req.body;
+    const user =  await User.findByIdAndUpdate(userId, {
+      wallet:total
+        });
+    if (!user) {
+      console.log("No users found");
     }
-    res.status(200).json({ appointments });
+
+    res.status(200).json({ user });
   } catch (error) {
     console.log(error);
   }
 };
+
+
+//TO GET WALLET BALANCE
+const fetchWalletBalance = async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    const user =  await User.findById( userId );
+    if (!user) {
+      console.log("No users found");
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+
+//TO GET WALLET BALANCE
+const walletPayment= async (req, res, next) => {
+  try {
+    const { total,docFees,userId,docId,slot } = req.body;
+    if(total<docFees){
+      return res.status(200).json({ success: false, message: "Insufficient Balance" });
+    }
+    else{
+      const newTotal=total-docFees
+   await User.findByIdAndUpdate(userId, {wallet:newTotal});
+   const appointment = new Appointment({
+    userId: userId,
+    doctorId: docId,
+    slot: slot,
+    amount_paid: docFees,
+  });
+  appointment.save();
+
+
+return res.status(200).json({ success: true });
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 
 
 module.exports = {
@@ -632,5 +698,9 @@ module.exports = {
   rating,
   getRating,
   getCancelledAppointments,
-  editReview
+  editReview,
+  walletUpdate,
+  fetchWalletBalance,
+  walletPayment
+
 };

@@ -20,6 +20,8 @@ adminRoute.get("/all-bookings",verifyUser('admin'), adminController.allBookings)
 adminRoute.get("/user-count",verifyUser('admin'), adminController.userCount);
 adminRoute.get("/doctor-count",verifyUser('admin'), adminController.doctorCount);
 adminRoute.get("/total-revenue",verifyUser('admin'), adminController.totalRevenue);
+adminRoute.get("/appt-status-count",verifyUser('admin'), adminController.apptStatusCount);
+
 
 
 

@@ -456,7 +456,6 @@ const cancelDocAppointment = async (req, res) => {
 const endAppointment = async (req, res) => {
   try {
     const appId = req.params.appId;
-    console.log(appId,'lllllllllllllllllllllllllllllllllllllllllllllllllllll');
   //  await Appointment.findOneAndUpdate({ _id: appId }, { isAttended: true });
     const updateAppointment=await Appointment.findOneAndUpdate({ _id: appId }, { isAttended: true });
 
@@ -486,14 +485,12 @@ console.log(doctor?.payments,'docpaymentsssssss');
       success: false,
       error: error.message,
     });
-console.log(updateAppointment.videoCallFees,'updateAppointment.videoCallFees');
     const amount =doctor?.payments + (doctor.videoCallFees * 80) / 100;
   await Doctor.findByIdAndUpdate(
     docId,
     { payments: amount },
     { new: true }
   );
-  // res.status(200).json({ updateAppointment, message: "Appointment Ended" });
 
     res.json("success");
   } catch (error) {
@@ -577,6 +574,22 @@ const totalAppointments = async (req, res, next) => {
   }
 };
 
+
+
+const apptStatusCount = async (req, res, next) => {
+  try {
+    const { id } = req.params;    
+    const appointmentsCount = await Appointment.find({ doctorId: id }).countDocuments();
+    const totalCancelledCount = await Appointment.find({ doctorId: id, isCancelled:true}).countDocuments();
+    const totalAttendedCount = await Appointment.find({ doctorId: id,isAttended:true }).countDocuments();
+ const totalConfirmedCount=appointmentsCount-(totalCancelledCount+totalAttendedCount)
+ 
+    res.status(200).json({ totalCancelledCount,totalAttendedCount,totalConfirmedCount });
+  } catch (error) {
+    next(error); 
+  }
+};
+
 module.exports = {
   doctorRegistration,
   sendMail,
@@ -595,5 +608,6 @@ module.exports = {
   addPrescription,
   doctorReviews,
   appointmentList,
-  totalAppointments
+  totalAppointments,
+  apptStatusCount
 };
