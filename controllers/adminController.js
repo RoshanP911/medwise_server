@@ -364,16 +364,34 @@ const doctorCount = async (req, res, next) => {
 
 const totalRevenue = async (req, res, next) => {
   try {
-    const sum = await Appointment.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalAmountPaid: { $sum: "$amount_paid" },
-        },
-      },
-    ]);
+    // const sum = await Appointment.aggregate([
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       totalAmountPaid: { $sum: "$amount_paid" },
+    //     },
+    //   },
+    // ]);
 
-    res.status(200).json({ totalAmountPaid: sum[0]?.totalAmountPaid || 0 });
+    // res.status(200).json({ totalAmountPaid: sum[0]?.totalAmountPaid || 0 });
+
+    
+    const adminId=process.env.ADMIN
+
+    const admin = await Admin.findById(adminId);
+    console.log(admin?.payments,'admin paymentzzzzzz');
+
+          if (!admin) return res
+      .status(404)
+      .json({
+        message: "Admin not found",
+        success: false,
+      });
+
+      const amount=admin.payments
+    res.status(200).json(amount);
+
+
   } catch (error) {
     console.log(error);
 

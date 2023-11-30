@@ -5,7 +5,6 @@ const Review = require("../models/reviewModel.js");
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
-const reviewModel = require("../models/reviewModel.js");
 const userRepository = require("../repository/user-repository.js");
 require("dotenv").config();
 
@@ -238,7 +237,7 @@ const forgotPassword = async (req, res) => {
     const isUser = await User.findOne({ email: email });
     if (isUser) {
       const payload = { userId: isUser._id };
-      const token = jwt.sign(payload, "secreTkey", { expiresIn: "2h" });
+      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
 
       const sendMail = async (email, token) => {
         try {
@@ -368,23 +367,22 @@ const singleDoctorDetails = async (req, res) => {
   try {
     id = req.params.id;
     const doctorDetail = await Doctor.findById({ _id: id });
-
-    if (doctorDetail) {
+     if(!doctorDetail){
+        res.status(404).send({
+        success: false,
+        message: "No doctors found",
+      });
+        }
       res.status(200).send({
         success: true,
         message: "details fetched",
         data: doctorDetail,
       });
-    } else {
-      res.status(404).send({
-        success: false,
-        message: "error while fetching doctor details",
-      });
-    }
+    
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error while fetching doctor", success: false, error });
+      .json({ message: "Error while fetching doctor", error });
   }
 };
 
@@ -453,17 +451,11 @@ const cancelAppointment = async (req, res) => {
 
     const userId=newAppt.userId
     const total=Number((newAppt.amount_paid * 60) / 100)
-console.log(total,'wallet to updateee');
-    console.log(newAppt,'neww appttt');
+
 
     const user =  await User.findByIdAndUpdate(userId, {
       wallet:total
         });
-
-        console.log(user,'user form cancel appttttt');
-
-
-
 
 
     return res
@@ -486,33 +478,11 @@ const prescriptions = async (req, res) => {
   }
 };
 
-//RATING
-// const rating = async (req, res) => {
-//   try {
-//     const data = req.body;
-//     const { review, rating, doctorId, userId, userName } = data;
-
-//     const ratings = new Review({
-//       userId: userId,
-//       doctorId: doctorId,
-//       feedback: review,
-//       rating: rating,
-//       userName: userName,
-//     });
-
-//     const datas = await ratings.save();
-//     res.json(datas);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
 
 const rating = async (req, res) => {
   try {
     const data = req.body;
     const { review, rating, doctorId, userId, userName } = data;
-    // console.log('juiooooooooooooo');
 
     // Check if a review already exists for the given doctorId and userId
     const existingReview = await Review.findOne({ doctorId, userId });
@@ -573,26 +543,8 @@ const getRating = async (req, res, next) => {
 const editReview = async (req, res, next) => {
   try {
     const { userId,doctorId } = req.body
-    // console.log(userId,'userrId');
-    // console.log(doctorId,'doctorrId');
 
-    // const { page, limit } = req.query;
-    // const skip = (page - 1) * limit;
     const allRatings = await Review.find({ doctorId: doctorId,userId:userId })
-      // .skip(skip)
-      // .limit(parseInt(limit))
-      // .sort({ createdAt: -1 })
-      // .populate("userId")
-      // .exec();
-      // console.log(allRatings,'houuu rrrr uuuu ');
-
-    // if (!allRatings) {
-    //   console.log("No reviews found");
-    // }
-    // const result = await Review.find({ doctorId: id });
-    // if (result.length === 0) return res.json({ allRatings, averageRating: 0 });
-    // const totalRatings = result.reduce((acc, rating) => acc + rating.rating, 0);
-    // const averageRating = (totalRatings / result.length).toFixed(1);
     res.status(200).json({success: true, allRatings });
   } catch (error) {
     console.log(error);

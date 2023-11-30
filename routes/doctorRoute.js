@@ -23,6 +23,7 @@ doctorRoute.patch('/addPrescription',verifyUser('doctor'),checkUserBlock,doctorC
 doctorRoute.get('/review/:id',verifyUser('doctor'),checkUserBlock,doctorController.doctorReviews)
 
 
+doctorRoute.get('/amount-received/:id',verifyUser('doctor'),doctorController.amountReceived)
 doctorRoute.get('/total-appointments/:id',verifyUser('doctor'),doctorController.totalAppointments)
 doctorRoute.get('/appointment-list/:id',verifyUser('doctor'),doctorController.appointmentList)
 doctorRoute.get('/appt-status-count/:id',verifyUser('doctor'),doctorController.apptStatusCount)

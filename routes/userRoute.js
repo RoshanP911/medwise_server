@@ -28,10 +28,4 @@ userRoute.post('/wallet-update',verifyUser('user'),checkUserBlock, userControlle
 userRoute.post('/fetch-wallet-balance',verifyUser('user'),checkUserBlock, userController.fetchWalletBalance)
 userRoute.post('/wallet-payment',verifyUser('user'),checkUserBlock, userController.walletPayment)
 
-
-
-
-
-
-
 module.exports = userRoute;
