@@ -2,10 +2,13 @@ const Doctor = require("../models/doctorModel.js");
 const Appointment = require("../models/appointmentModel.js");
 const Department = require("../models/departmentModel.js");
 const Review = require("../models/reviewModel.js");
+const Admin = require("../models/adminModel.js");
+
 
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
+const { adminLogin } = require("./adminController.js");
 require("dotenv").config();
 
 //NEW DOCTOR SIGNUP
@@ -445,6 +448,8 @@ const cancelDocAppointment = async (req, res) => {
       { _id: apptId },
       { $set: { isCancelled: true } }
     );
+
+    
     return res
       .status(200)
       .json({ success: true, message: "Appointment cancelled" });
@@ -492,6 +497,18 @@ console.log(doctor?.payments,'docpaymentsssssss');
     { new: true }
   );
 
+const adminId=process.env.ADMIN
+
+const admin = await Admin.findById(adminId);
+console.log(admin?.payments,'admin paymentsssssss');
+  const amountAdmin =admin?.payments + (doctor.videoCallFees * 20) / 100;
+
+ await Admin.findByIdAndUpdate(
+  adminId ,
+    { payments: amountAdmin },
+    { new: true }
+  );
+
     res.json("success");
   } catch (error) {
     console.log(error);
@@ -532,6 +549,26 @@ const doctorReviews = async (req, res, next) => {
 };
 
 
+
+
+//DASHBOARD AMOUNT
+const amountReceived = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const docData = await Doctor.findById(id);
+
+          if (!docData) return res
+      .status(404)
+      .json({
+        message: "Doctor not found",
+        success: false,
+      });
+      const amount=docData.payments
+    res.status(200).json(amount);
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 const appointmentList = async (req, res, next) => {
@@ -609,5 +646,6 @@ module.exports = {
   doctorReviews,
   appointmentList,
   totalAppointments,
-  apptStatusCount
+  apptStatusCount,
+  amountReceived
 };
