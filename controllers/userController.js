@@ -15,7 +15,6 @@ const userRegistration = async (req, res) => {
     // const existingUser = await User.findOne({ email: email });
     const existingUser = await userRepository.findUserByEmail(email);
 
-    console.log(existingUser, "existingUser");
     if (existingUser) {
       if (existingUser.is_verified) {
         res
@@ -38,7 +37,6 @@ const userRegistration = async (req, res) => {
 
         await sendMail(email, otp);
 
-        console.log(existingUser, "updatedUser");
         return res.status(200).json({
           user: existingUser,
           message: "Please check your mail for OTP",
@@ -60,18 +58,9 @@ const userRegistration = async (req, res) => {
         mobile,
         otp
       );
-      // const newUser = await User.create({
-      //   name: name,
-      //   email: email,
-      //   password: hashPassword,
-      //   mobile: mobile,
-      //   otp: otp,
-      // });
 
       if (newUser) {
         await sendMail(email, otp);
-
-        console.log(newUser, "newUser");
         return res.status(200).json({
           user: newUser,
           message: "Please check your mail for OTP",
@@ -120,7 +109,6 @@ const sendMail = async (email, otp) => {
 const verifyOtp = async (req, res) => {
   try {
     const { ootp, state } = req.body;
-    console.log(req.body, "reqbody verify otpp");
     const user = await User.findById(state);
     if (user) {
       if (user.otp === ootp) {
@@ -178,10 +166,7 @@ const userLogin = async (req, res) => {
     if (email && password) {
       const isUser = await userRepository.findUserByEmail(email);
       
-    
-
-
-      if (isUser) {
+          if (isUser) {
 
         if (isUser.is_blocked) {
           return res
@@ -255,7 +240,10 @@ const forgotPassword = async (req, res) => {
             from: "roshanprashanth@gmail.com",
             to: email,
             subject: "Reset password link",
-            text: `http://localhost:3000/reset-password/${isUser._id}/${token}`,
+            // text: `http://localhost:3000/reset-password/${isUser._id}/${token}`,
+            text: `https://medwise-client.vercel.app/reset-password/${isUser._id}/${token}`,
+
+
           };
 
           transporter.sendMail(mailoption, function (error, info) {
@@ -290,7 +278,7 @@ const resetPassword = async (req, res) => {
     const { id, token } = req.params;
     const newPassword = req.body.password;
 
-    jwt.verify(token, "secreTkey", async (err, decoded) => {
+    jwt.verify(token,process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
         return res.json({ message: "Error with token" });
       } else {
@@ -453,10 +441,13 @@ const cancelAppointment = async (req, res) => {
     const total=Number((newAppt.amount_paid * 60) / 100)
 
 
-    const user =  await User.findByIdAndUpdate(userId, {
-      wallet:total
-        });
-
+     await User.findByIdAndUpdate(
+      userId,
+      {
+        $inc: { wallet: total } 
+      },
+      { new: true } 
+    );
 
     return res
       .status(200)

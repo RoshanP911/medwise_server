@@ -8,7 +8,6 @@ const Admin = require("../models/adminModel.js");
 const bcryptjs = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
-const { adminLogin } = require("./adminController.js");
 require("dotenv").config();
 
 //NEW DOCTOR SIGNUP
@@ -16,7 +15,6 @@ const doctorRegistration = async (req, res) => {
   const { name, email, password, mobile } = req.body;
   try {
     const existingUser = await Doctor.findOne({ email: email });
-    console.log(existingUser, "existingUser");
     if (existingUser) {
       if (existingUser.is_verified) {
         res
@@ -39,7 +37,6 @@ const doctorRegistration = async (req, res) => {
 
         await sendMail(email, otp);
 
-        console.log(existingUser, "updatedUser");
         return res
           .status(200)
           .json({
@@ -67,7 +64,6 @@ const doctorRegistration = async (req, res) => {
       if (newUser) {
         await sendMail(email, otp);
 
-        console.log(newUser, "newUser");
         return res
           .status(200)
           .json({
@@ -176,7 +172,6 @@ const resendOtp = async (req, res) => {
 const doctorLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body);
 
     const doctor = await Doctor.findOne({ email });
 
@@ -235,7 +230,7 @@ const forgotPassword = async (req, res) => {
 
     if (isUser) {
       const payload = { userId: isUser._id };
-      const token = jwt.sign(payload, "secreTkey", { expiresIn: "2h" });
+      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "2h" });
 
       const sendMail = async (email, token) => {
         try {
@@ -253,7 +248,8 @@ const forgotPassword = async (req, res) => {
             from: "roshanprashanth@gmail.com",
             to: email,
             subject: "Reset password link",
-            text: `http://localhost:3000/doctor/reset-password/${isUser._id}/${token}`,
+            // text: `http://localhost:3000/doctor/reset-password/${isUser._id}/${token}`,
+            text: `https://medwise-client.vercel.app/doctor/reset-password/${isUser._id}/${token}`,
           };
 
           transporter.sendMail(mailoption, function (error, info) {
@@ -288,7 +284,7 @@ const resetPassword = async (req, res) => {
     const { id, token } = req.params;
     const newPassword = req.body.password;
 
-    jwt.verify(token, "secreTkey", async (err, decoded) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
         return res.json({ message: "Error with token" });
       } else {
@@ -461,15 +457,8 @@ const cancelDocAppointment = async (req, res) => {
 const endAppointment = async (req, res) => {
   try {
     const appId = req.params.appId;
-  //  await Appointment.findOneAndUpdate({ _id: appId }, { isAttended: true });
     const updateAppointment=await Appointment.findOneAndUpdate({ _id: appId }, { isAttended: true });
-
-    // const updateAppointment = await Appointment.findByIdAndUpdate(
-    //   appId,
-    //   { isAttended: true },
-    //   { new: true }
-    // );
-console.log(updateAppointment,'updateappptttttrtt');
+    
     if (!updateAppointment)
     return res
     .status(404)
@@ -481,7 +470,6 @@ console.log(updateAppointment,'updateappptttttrtt');
 
     const docId = updateAppointment.doctorId;
     const doctor = await Doctor.findById(docId);
-console.log(doctor?.payments,'docpaymentsssssss');
     if (!doctor)
     return res
     .status(404)
@@ -500,7 +488,6 @@ console.log(doctor?.payments,'docpaymentsssssss');
 const adminId=process.env.ADMIN
 
 const admin = await Admin.findById(adminId);
-console.log(admin?.payments,'admin paymentsssssss');
   const amountAdmin =admin?.payments + (doctor.videoCallFees * 20) / 100;
 
  await Admin.findByIdAndUpdate(
@@ -520,7 +507,7 @@ const addPrescription = async (req, res) => {
   try {
     const data = req.body.payload;
     const id = req.body.id;
-    const update = await Appointment.findOneAndUpdate(
+    await Appointment.findOneAndUpdate(
       { _id: id },
       { medicines: data },
       { new: true }

@@ -25,8 +25,8 @@ app.use(cookieParser());
 
 //ROUTE SETTING
 app.use("/", userRoute);
-app.use("/admin", adminRoute);
 app.use("/doctor", doctorRoute);
+app.use("/admin", adminRoute);
 
 //PORT SETTING
 const PORT = process.env.PORT || 9001;
