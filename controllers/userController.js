@@ -240,9 +240,7 @@ const forgotPassword = async (req, res) => {
             from: "roshanprashanth@gmail.com",
             to: email,
             subject: "Reset password link",
-            // text: `http://localhost:3000/reset-password/${isUser._id}/${token}`,
             text: `https://medwise-client.vercel.app/reset-password/${isUser._id}/${token}`,
-
 
           };
 
@@ -278,7 +276,7 @@ const resetPassword = async (req, res) => {
     const { id, token } = req.params;
     const newPassword = req.body.password;
 
-    jwt.verify(token,process.env.JWT_SECRET, async (err, decoded) => {
+    jwt.verify(token,process.env.JWT_SECRET, async (err) => {
       if (err) {
         return res.json({ message: "Error with token" });
       } else {

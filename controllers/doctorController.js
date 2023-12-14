@@ -248,7 +248,6 @@ const forgotPassword = async (req, res) => {
             from: "roshanprashanth@gmail.com",
             to: email,
             subject: "Reset password link",
-            // text: `http://localhost:3000/doctor/reset-password/${isUser._id}/${token}`,
             text: `https://medwise-client.vercel.app/doctor/reset-password/${isUser._id}/${token}`,
           };
 
